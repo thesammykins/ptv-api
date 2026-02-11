@@ -35,7 +35,7 @@ export class RequestManager {
 
   async execute(url: string, endpoint: string): Promise<Response> {
     const existing = this.inFlight.get(url);
-    if (existing) return existing.promise;
+    if (existing) return existing.promise.then((r) => r.clone());
 
     const request = this.doRequest(url, endpoint);
     this.inFlight.set(url, request);

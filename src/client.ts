@@ -123,9 +123,15 @@ export class PTVClient {
 
     let body: unknown;
     try {
-      body = await response.json();
-    } catch {
-      throw new PTVNetworkError(path, new TypeError("Invalid JSON response"));
+      const text = await response.text();
+      body = JSON.parse(text);
+    } catch (err) {
+      throw new PTVNetworkError(
+        path,
+        new TypeError(
+          `Invalid JSON response (status ${response.status}, content-type: ${response.headers.get("content-type") ?? "none"})`,
+        ),
+      );
     }
 
     const result = validator.safeParse(body);
