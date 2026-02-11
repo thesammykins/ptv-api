@@ -46,7 +46,12 @@ describe("RequestManager", () => {
 
       resolveRequest(jsonResponse({ ok: true }));
       const [r1, r2] = await Promise.all([p1, p2]);
-      expect(r1).toBe(r2);
+      // Dedup returns a clone so both callers can consume the body independently
+      expect(r1).not.toBe(r2);
+      expect(r1.status).toBe(200);
+      expect(r2.status).toBe(200);
+      const [b1, b2] = await Promise.all([r1.json(), r2.json()]);
+      expect(b1).toStrictEqual(b2);
     });
 
     it("makes separate requests for different URLs", async () => {
