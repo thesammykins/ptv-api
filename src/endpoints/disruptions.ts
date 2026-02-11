@@ -1,9 +1,14 @@
 import { z } from "zod";
 import { StatusResponseSchema } from "../schemas/common.js";
-import { DisruptionSchema } from "../schemas/disruption.js";
+import { DisruptionSchema, DisruptionModeSchema } from "../schemas/disruption.js";
 import type { DisruptionOptions } from "../types.js";
 
 export const DISRUPTIONS_PATH = "/v3/disruptions";
+export const DISRUPTION_MODES_PATH = "/v3/disruptions/modes";
+
+export function disruptionByIdPath(disruptionId: number): string {
+  return `/v3/disruptions/${disruptionId}`;
+}
 
 export function disruptionsForRoutePath(routeId: number): string {
   return `/v3/disruptions/route/${routeId}`;
@@ -28,3 +33,17 @@ export const DisruptionsResponseValidator = z.object({
 }).passthrough();
 
 export type DisruptionsResult = z.infer<typeof DisruptionsResponseValidator>;
+
+export const DisruptionResponseValidator = z.object({
+  disruption: DisruptionSchema,
+  status: StatusResponseSchema,
+}).passthrough();
+
+export type DisruptionResult = z.infer<typeof DisruptionResponseValidator>;
+
+export const DisruptionModesResponseValidator = z.object({
+  disruption_modes: z.array(DisruptionModeSchema),
+  status: StatusResponseSchema,
+}).passthrough();
+
+export type DisruptionModesResult = z.infer<typeof DisruptionModesResponseValidator>;

@@ -411,6 +411,305 @@ describe("PTVClient", () => {
       const url = fetchFn.mock.calls[0][0] as string;
       expect(url).toContain("expand=VehiclePosition");
     });
+
+    it("passes extended run options", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ runs: [], status: STATUS_OK }),
+      );
+
+      await client.runs(42, 0, {
+        expand: ["VehiclePosition"],
+        date_utc: "2024-01-01T00:00:00Z",
+        include_geopath: true,
+      });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("expand=VehiclePosition");
+      expect(url).toContain("date_utc=2024-01-01T00%3A00%3A00Z");
+      expect(url).toContain("include_geopath=true");
+    });
+  });
+
+  describe("directionsById", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ directions: [], status: STATUS_OK }),
+      );
+
+      await client.directionsById(1);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/directions/1");
+    });
+  });
+
+  describe("directionsByIdAndType", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ directions: [], status: STATUS_OK }),
+      );
+
+      await client.directionsByIdAndType(1, 0);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/directions/1/route_type/0");
+    });
+  });
+
+  describe("disruptionById", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          disruption: { disruption_id: 123, title: "Test" },
+          status: STATUS_OK,
+        }),
+      );
+
+      const result = await client.disruptionById(123);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/disruptions/123");
+      expect(result.disruption.disruption_id).toBe(123);
+    });
+  });
+
+  describe("disruptionModes", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          disruption_modes: [
+            { disruption_mode_name: "Train", disruption_mode: 0 },
+          ],
+          status: STATUS_OK,
+        }),
+      );
+
+      const result = await client.disruptionModes();
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/disruptions/modes");
+      expect(result.disruption_modes).toHaveLength(1);
+    });
+  });
+
+  describe("fareEstimate", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(jsonResponse({}));
+
+      await client.fareEstimate(1, 3);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/fare_estimate/min_zone/1/max_zone/3");
+    });
+
+    it("passes fare estimate options", async () => {
+      fetchFn.mockResolvedValue(jsonResponse({}));
+
+      await client.fareEstimate(1, 3, {
+        journey_touch_on_utc: "2024-01-01T08:00:00Z",
+        journey_touch_off_utc: "2024-01-01T09:00:00Z",
+        is_journey_in_free_tram_zone: false,
+        travelled_route_types: [0, 1],
+      });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("journey_touch_on_utc=2024-01-01T08%3A00%3A00Z");
+      expect(url).toContain("journey_touch_off_utc=2024-01-01T09%3A00%3A00Z");
+      expect(url).toContain("is_journey_in_free_tram_zone=false");
+      expect(url).toContain("travelled_route_types=0");
+      expect(url).toContain("travelled_route_types=1");
+    });
+  });
+
+  describe("outlets", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ outlets: [], status: STATUS_OK }),
+      );
+
+      await client.outlets();
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/outlets");
+    });
+
+    it("passes max_results option", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ outlets: [], status: STATUS_OK }),
+      );
+
+      await client.outlets({ max_results: 10 });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("max_results=10");
+    });
+  });
+
+  describe("outletsNearby", () => {
+    it("constructs correct path with lat, lon, maxDistance", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ outlets: [], status: STATUS_OK }),
+      );
+
+      await client.outletsNearby(-37.818, 144.967, 500);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/outlets/location/-37.818,144.967,500");
+    });
+
+    it("passes max_results option", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ outlets: [], status: STATUS_OK }),
+      );
+
+      await client.outletsNearby(-37.818, 144.967, 500, { max_results: 5 });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("max_results=5");
+    });
+  });
+
+  describe("stoppingPattern", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          departures: [],
+          stops: {},
+          routes: {},
+          runs: {},
+          directions: {},
+          disruptions: [],
+          status: STATUS_OK,
+        }),
+      );
+
+      await client.stoppingPattern("12345", 0);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/pattern/run/12345/route_type/0");
+    });
+
+    it("passes stopping pattern options", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          departures: [],
+          stops: {},
+          routes: {},
+          runs: {},
+          directions: {},
+          disruptions: [],
+          status: STATUS_OK,
+        }),
+      );
+
+      await client.stoppingPattern("12345", 0, {
+        expand: ["stop"],
+        stop_id: 1071,
+        date_utc: "2024-01-01T00:00:00Z",
+        include_skipped_stops: true,
+        include_geopath: false,
+      });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("expand=stop");
+      expect(url).toContain("stop_id=1071");
+      expect(url).toContain("date_utc=2024-01-01T00%3A00%3A00Z");
+      expect(url).toContain("include_skipped_stops=true");
+      expect(url).toContain("include_geopath=false");
+    });
+  });
+
+  describe("runByRef", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ runs: [], status: STATUS_OK }),
+      );
+
+      await client.runByRef("12345");
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/runs/12345");
+    });
+
+    it("passes extended run options", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ runs: [], status: STATUS_OK }),
+      );
+
+      await client.runByRef("12345", { expand: ["VehiclePosition"] });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("expand=VehiclePosition");
+    });
+  });
+
+  describe("runByRefAndType", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          run: {
+            run_id: 1,
+            run_ref: "12345",
+            route_id: 42,
+            route_type: 0,
+          },
+          status: STATUS_OK,
+        }),
+      );
+
+      const result = await client.runByRefAndType("12345", 0);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/runs/12345/route_type/0");
+      expect(result.run.run_ref).toBe("12345");
+    });
+  });
+
+  describe("runsForRoute", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ runs: [], status: STATUS_OK }),
+      );
+
+      await client.runsForRoute(42);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/runs/route/42");
+    });
+
+    it("passes extended run options", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({ runs: [], status: STATUS_OK }),
+      );
+
+      await client.runsForRoute(42, {
+        date_utc: "2024-01-01T00:00:00Z",
+        include_geopath: true,
+      });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("date_utc=2024-01-01T00%3A00%3A00Z");
+      expect(url).toContain("include_geopath=true");
+    });
+  });
+
+  describe("stopDetails", () => {
+    it("constructs correct path", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          stop: { stop_id: 1071, stop_name: "Flinders Street" },
+          status: STATUS_OK,
+        }),
+      );
+
+      const result = await client.stopDetails(1071, 0);
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("/v3/stops/1071/route_type/0");
+      expect(result.stop.stop_name).toBe("Flinders Street");
+    });
+
+    it("passes stop details options", async () => {
+      fetchFn.mockResolvedValue(
+        jsonResponse({
+          stop: { stop_id: 1071, stop_name: "Flinders Street" },
+          status: STATUS_OK,
+        }),
+      );
+
+      await client.stopDetails(1071, 0, {
+        stop_location: true,
+        stop_amenities: true,
+        stop_accessibility: true,
+        gtfs: false,
+      });
+      const url = fetchFn.mock.calls[0][0] as string;
+      expect(url).toContain("stop_location=true");
+      expect(url).toContain("stop_amenities=true");
+      expect(url).toContain("stop_accessibility=true");
+      expect(url).toContain("gtfs=false");
+    });
   });
 
   describe("error handling", () => {
@@ -495,6 +794,20 @@ describe("PTVClient", () => {
       await expect(client.healthcheck()).rejects.toBeInstanceOf(
         PTVNetworkError,
       );
+    });
+
+    it("includes 'none' in error when content-type header is absent", async () => {
+      const response = new Response("not json", { status: 200 });
+      response.headers.delete("content-type");
+      fetchFn.mockResolvedValue(response);
+
+      try {
+        await client.healthcheck();
+        expect.unreachable("should have thrown");
+      } catch (err) {
+        expect(err).toBeInstanceOf(PTVNetworkError);
+        expect((err as PTVNetworkError).message).toContain("content-type: none");
+      }
     });
 
     it("throws PTVValidationError when response doesn't match schema", async () => {

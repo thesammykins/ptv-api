@@ -29,3 +29,8 @@ export const DisruptionSchema = z.object({
   display_on_board: z.boolean().optional(),
   display_status: z.boolean().optional(),
 }).passthrough();
+
+export const DisruptionModeSchema = z.object({
+  disruption_mode_name: z.string(),
+  disruption_mode: z.number(),
+}).passthrough();

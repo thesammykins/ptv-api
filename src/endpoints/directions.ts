@@ -6,6 +6,17 @@ export function directionsPath(routeId: number): string {
   return `/v3/directions/route/${routeId}`;
 }
 
+export function directionsByIdPath(directionId: number): string {
+  return `/v3/directions/${directionId}`;
+}
+
+export function directionsByIdAndTypePath(
+  directionId: number,
+  routeType: number,
+): string {
+  return `/v3/directions/${directionId}/route_type/${routeType}`;
+}
+
 export const DirectionsResponseValidator = z.object({
   directions: z.array(DirectionSchema),
   status: StatusResponseSchema,
