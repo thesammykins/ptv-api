@@ -45,6 +45,9 @@
     "url": "https://github.com/thesammykins/ptv-api/issues"
   },
   "homepage": "https://github.com/thesammykins/ptv-api#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
