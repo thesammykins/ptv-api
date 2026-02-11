@@ -1,5 +1,5 @@
 {
-  "name": "ptv-api",
+  "name": "@thesammykins/ptv-api",
   "version": "0.1.0",
   "description": "TypeScript client for the PTV (Public Transport Victoria) Timetable API v3",
   "type": "module",
@@ -23,7 +23,30 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run test:coverage && npm run build"
+  },
+  "keywords": [
+    "ptv",
+    "public-transport-victoria",
+    "timetable",
+    "api-client",
+    "melbourne",
+    "transport",
+    "typescript"
+  ],
+  "author": "thesammykins",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thesammykins/ptv-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thesammykins/ptv-api/issues"
+  },
+  "homepage": "https://github.com/thesammykins/ptv-api#readme",
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "zod": "^3.24.0"
