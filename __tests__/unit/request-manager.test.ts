@@ -54,6 +54,40 @@ describe("RequestManager", () => {
       expect(b1).toStrictEqual(b2);
     });
 
+    it("allows both original and dedup callers to read body independently", async () => {
+      let resolveRequest!: (r: Response) => void;
+      const fetchFn = vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            resolveRequest = resolve;
+          }),
+      );
+
+      const rm = new RequestManager({ minInterval: 0, fetch: fetchFn });
+
+      const p1 = rm.execute("http://test.com/b", "/v3/b");
+      await vi.advanceTimersByTimeAsync(0);
+
+      const p2 = rm.execute("http://test.com/b", "/v3/b");
+
+      resolveRequest(jsonResponse({ data: "test" }));
+      
+      // Get both responses
+      const r1 = await p1;
+      const r2 = await p2;
+      
+      // Both should be able to read body independently
+      // With lazy clone this can be racey - if r1 body is consumed first, r2 clone might fail
+      const b1 = await r1.json();
+      const b2 = await r2.json();
+
+      expect(b1).toStrictEqual({ data: "test" });
+      expect(b2).toStrictEqual({ data: "test" });
+      
+      // Verify they are independent Response objects
+      expect(r1).not.toBe(r2);
+    });
+
     it("makes separate requests for different URLs", async () => {
       const fetchFn = vi.fn(() => Promise.resolve(jsonResponse({ ok: true })));
       const rm = new RequestManager({ minInterval: 0, fetch: fetchFn });

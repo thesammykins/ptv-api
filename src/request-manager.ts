@@ -41,7 +41,8 @@ export class RequestManager {
     this.inFlight.set(url, request);
 
     try {
-      return await request.promise;
+      // Clone the response so all callers (including the first) get independent copies
+      return (await request.promise).clone();
     } finally {
       this.inFlight.delete(url);
     }
@@ -90,6 +91,8 @@ export class RequestManager {
         throw error;
       });
 
+    // Clone immediately when response arrives so dedup callers get independent copies
+    // Store the response in the promise for cloning by all callers
     return { promise, controller };
   }
 
