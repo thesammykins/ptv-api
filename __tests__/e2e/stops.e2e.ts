@@ -3,6 +3,7 @@ import {
   hasCredentials,
   createClient,
   TRAIN_ROUTE_TYPE,
+  FLINDERS_STOP_ID,
 } from "./setup.js";
 
 describe.skipIf(!hasCredentials)("stops e2e", () => {
@@ -34,5 +35,17 @@ describe.skipIf(!hasCredentials)("stops e2e", () => {
       expect(typeof stop.stop_id).toBe("number");
       expect(typeof stop.stop_name).toBe("string");
     }
+  });
+
+  it("returns stop details with accessibility info", async () => {
+    const result = await client.stopDetails(FLINDERS_STOP_ID, TRAIN_ROUTE_TYPE, {
+      stop_accessibility: true,
+    });
+    expect(typeof result.stop.stop_id).toBe("number");
+    expect(result.stop.stop_id).toBe(FLINDERS_STOP_ID);
+    expect(typeof result.stop.stop_name).toBe("string");
+    expect(result.stop.stop_name.length).toBeGreaterThan(0);
+    // Accessibility info should be present when requested
+    expect(result.stop.stop_accessible).toBeDefined();
   });
 });

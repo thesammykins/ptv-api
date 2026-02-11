@@ -37,4 +37,28 @@ describe.skipIf(!hasCredentials)("disruptions e2e", () => {
     expect(result.disruptions).toBeDefined();
     expect(typeof result.disruptions).toBe("object");
   });
+
+  it("returns a specific disruption by ID if one exists", async () => {
+    const allDisruptions = await client.disruptions();
+    
+    // Skip test if no disruptions exist
+    if (!allDisruptions.disruptions.general || allDisruptions.disruptions.general.length === 0) {
+      return;
+    }
+
+    const disruptionId = allDisruptions.disruptions.general[0].disruption_id;
+    const result = await client.disruptionById(disruptionId);
+    expect(result.disruption).toBeDefined();
+    expect(result.disruption.disruption_id).toBe(disruptionId);
+  });
+
+  it("returns disruption modes", async () => {
+    const result = await client.disruptionModes();
+    expect(result.disruption_modes).toBeInstanceOf(Array);
+    expect(result.disruption_modes.length).toBeGreaterThan(0);
+    for (const mode of result.disruption_modes) {
+      expect(typeof mode.disruption_mode).toBe("number");
+      expect(typeof mode.disruption_mode_name).toBe("string");
+    }
+  });
 });
