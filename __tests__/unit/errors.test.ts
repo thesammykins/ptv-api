@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   PTVError,
   PTVAuthError,
+  PTVBadRequestError,
   PTVNotFoundError,
   PTVRateLimitError,
   PTVServerError,
@@ -79,6 +80,58 @@ describe("PTVError", () => {
     const err = new PTVError("fail", 400, "/v3/test", circular);
     expect(err.responseBody).toBe(circular);
   });
+
+  it("redacts devid from stack trace", () => {
+    const err = new PTVError(
+      "Error at /v3/test?devid=12345&other=1",
+      400,
+      "/v3/test?devid=secret",
+    );
+    expect(err.stack).toBeDefined();
+    expect(err.stack).toContain("devid=[REDACTED]");
+    expect(err.stack).not.toContain("secret");
+  });
+
+  it("redacts signature from stack trace", () => {
+    const err = new PTVError(
+      "Error at /v3/test?signature=ABCDEF1234",
+      400,
+      "/v3/test?signature=topsecret",
+    );
+    expect(err.stack).toBeDefined();
+    expect(err.stack).toContain("signature=[REDACTED]");
+    expect(err.stack).not.toContain("topsecret");
+  });
+
+  it("redacts apikey from message", () => {
+    const err = new PTVError(
+      "Error at /v3/test?apikey=SECRET123",
+      400,
+      "/v3/test",
+    );
+    expect(err.message).toContain("apikey=[REDACTED]");
+    expect(err.message).not.toContain("SECRET123");
+  });
+
+  it("redacts key from message", () => {
+    const err = new PTVError(
+      "Error at /v3/test?key=SECRET456",
+      400,
+      "/v3/test",
+    );
+    expect(err.message).toContain("key=[REDACTED]");
+    expect(err.message).not.toContain("SECRET456");
+  });
+
+  it("redacts api_key from message", () => {
+    const err = new PTVError(
+      "Error at /v3/test?api_key=SECRET789",
+      400,
+      "/v3/test",
+    );
+    expect(err.message).toContain("api_key=[REDACTED]");
+    expect(err.message).not.toContain("SECRET789");
+  });
 });
 
 describe("PTVAuthError", () => {
@@ -87,6 +140,16 @@ describe("PTVAuthError", () => {
     expect(err.name).toBe("PTVAuthError");
     expect(err.statusCode).toBe(403);
     expect(err.message).toBe("Authentication failed");
+    expect(err).toBeInstanceOf(PTVError);
+  });
+});
+
+describe("PTVBadRequestError", () => {
+  it("has correct name and status 400", () => {
+    const err = new PTVBadRequestError("/v3/test");
+    expect(err.name).toBe("PTVBadRequestError");
+    expect(err.statusCode).toBe(400);
+    expect(err.message).toBe("Bad request");
     expect(err).toBeInstanceOf(PTVError);
   });
 });
@@ -161,6 +224,11 @@ describe("PTVTimeoutError", () => {
 });
 
 describe("errorFromStatus", () => {
+  it("returns PTVBadRequestError for 400", () => {
+    const err = errorFromStatus(400, "/v3/test");
+    expect(err).toBeInstanceOf(PTVBadRequestError);
+  });
+
   it("returns PTVAuthError for 401", () => {
     const err = errorFromStatus(401, "/v3/test");
     expect(err).toBeInstanceOf(PTVAuthError);

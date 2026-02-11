@@ -1,8 +1,14 @@
 export { PTVClient, type PTVClientOptions } from "./client.js";
 
 export {
+  RequestManager,
+  type RequestManagerOptions,
+} from "./request-manager.js";
+
+export {
   PTVError,
   PTVAuthError,
+  PTVBadRequestError,
   PTVNotFoundError,
   PTVRateLimitError,
   PTVServerError,
@@ -75,4 +81,8 @@ export type {
   OutletsOptions,
   StoppingPatternOptions,
   StopDetailsOptions,
+  // Expand parameter union types
+  DepartureExpand,
+  RunExpand,
+  PatternExpand,
 } from "./types.js";
