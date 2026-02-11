@@ -33,27 +33,57 @@ import {
 import {
   stopsNearbyPath,
   stopsOnRoutePath,
+  stopDetailsPath,
   buildNearbyParams,
   buildStopsRouteParams,
+  buildStopDetailsParams,
   StopsLocationResponseValidator,
   StopsRouteResponseValidator,
+  StopDetailsResponseValidator,
 } from "./endpoints/stops.js";
 import {
   directionsPath,
+  directionsByIdPath,
+  directionsByIdAndTypePath,
   DirectionsResponseValidator,
 } from "./endpoints/directions.js";
 import {
   DISRUPTIONS_PATH,
+  DISRUPTION_MODES_PATH,
+  disruptionByIdPath,
   disruptionsForRoutePath,
   disruptionsForStopPath,
   buildDisruptionParams,
   DisruptionsResponseValidator,
+  DisruptionResponseValidator,
+  DisruptionModesResponseValidator,
 } from "./endpoints/disruptions.js";
 import {
   runsPath,
+  runByRefPath,
+  runByRefAndTypePath,
+  runsForRoutePath,
   buildRunParams,
   RunsResponseValidator,
+  RunResponseValidator,
 } from "./endpoints/runs.js";
+import {
+  fareEstimatePath,
+  buildFareEstimateParams,
+  FareEstimateResponseValidator,
+} from "./endpoints/fare-estimate.js";
+import {
+  OUTLETS_PATH,
+  outletsNearbyPath,
+  buildOutletsParams,
+  OutletsResponseValidator,
+  OutletsNearbyResponseValidator,
+} from "./endpoints/outlets.js";
+import {
+  stoppingPatternPath,
+  buildStoppingPatternParams,
+  StoppingPatternResponseValidator,
+} from "./endpoints/patterns.js";
 import type {
   HealthcheckResponse,
   RouteTypesResponse,
@@ -70,9 +100,22 @@ import type {
   StopsRouteOptions,
   DirectionsResponse,
   DisruptionsResponse,
+  DisruptionResponse,
+  DisruptionModesResponse,
   DisruptionOptions,
   RunsResponse,
+  RunResponse,
   RunOptions,
+  FareEstimateResponse,
+  FareEstimateOptions,
+  OutletsResponse,
+  OutletsNearbyResponse,
+  OutletsOptions,
+  StoppingPatternResponse,
+  StoppingPatternOptions,
+  StopDetailsResponse,
+  StopDetailsOptions,
+  ExtendedRunOptions,
 } from "./types.js";
 
 const DEFAULT_BASE_URL = "https://timetableapi.ptv.vic.gov.au";
@@ -266,12 +309,138 @@ export class PTVClient {
   async runs(
     routeId: number,
     routeType: number,
-    opts?: RunOptions,
+    opts?: ExtendedRunOptions,
   ): Promise<RunsResponse> {
     return this.request(
       runsPath(routeId, routeType),
       buildRunParams(opts),
       RunsResponseValidator,
+    );
+  }
+
+  async directionsById(directionId: number): Promise<DirectionsResponse> {
+    return this.request(
+      directionsByIdPath(directionId),
+      {},
+      DirectionsResponseValidator,
+    );
+  }
+
+  async directionsByIdAndType(
+    directionId: number,
+    routeType: number,
+  ): Promise<DirectionsResponse> {
+    return this.request(
+      directionsByIdAndTypePath(directionId, routeType),
+      {},
+      DirectionsResponseValidator,
+    );
+  }
+
+  async disruptionById(disruptionId: number): Promise<DisruptionResponse> {
+    return this.request(
+      disruptionByIdPath(disruptionId),
+      {},
+      DisruptionResponseValidator,
+    );
+  }
+
+  async disruptionModes(): Promise<DisruptionModesResponse> {
+    return this.request(
+      DISRUPTION_MODES_PATH,
+      {},
+      DisruptionModesResponseValidator,
+    );
+  }
+
+  async fareEstimate(
+    minZone: number,
+    maxZone: number,
+    opts?: FareEstimateOptions,
+  ): Promise<FareEstimateResponse> {
+    return this.request(
+      fareEstimatePath(minZone, maxZone),
+      buildFareEstimateParams(opts),
+      FareEstimateResponseValidator,
+    );
+  }
+
+  async outlets(opts?: OutletsOptions): Promise<OutletsResponse> {
+    return this.request(
+      OUTLETS_PATH,
+      buildOutletsParams(opts),
+      OutletsResponseValidator,
+    );
+  }
+
+  async outletsNearby(
+    lat: number,
+    lon: number,
+    maxDistance: number,
+    opts?: OutletsOptions,
+  ): Promise<OutletsNearbyResponse> {
+    return this.request(
+      outletsNearbyPath(lat, lon, maxDistance),
+      buildOutletsParams(opts),
+      OutletsNearbyResponseValidator,
+    );
+  }
+
+  async stoppingPattern(
+    runRef: string,
+    routeType: number,
+    opts?: StoppingPatternOptions,
+  ): Promise<StoppingPatternResponse> {
+    return this.request(
+      stoppingPatternPath(runRef, routeType),
+      buildStoppingPatternParams(opts),
+      StoppingPatternResponseValidator,
+    );
+  }
+
+  async runByRef(
+    runRef: string,
+    opts?: ExtendedRunOptions,
+  ): Promise<RunsResponse> {
+    return this.request(
+      runByRefPath(runRef),
+      buildRunParams(opts),
+      RunsResponseValidator,
+    );
+  }
+
+  async runByRefAndType(
+    runRef: string,
+    routeType: number,
+    opts?: ExtendedRunOptions,
+  ): Promise<RunResponse> {
+    return this.request(
+      runByRefAndTypePath(runRef, routeType),
+      buildRunParams(opts),
+      RunResponseValidator,
+    );
+  }
+
+  async runsForRoute(
+    routeId: number,
+    opts?: ExtendedRunOptions,
+  ): Promise<RunsResponse> {
+    return this.request(
+      runsForRoutePath(routeId),
+      buildRunParams(opts),
+      RunsResponseValidator,
+    );
+  }
+
+  async stopDetails(
+    stopId: number,
+    routeType: number,
+    opts?: StopDetailsOptions,
+  ): Promise<StopDetailsResponse> {
+    return this.request(
+      stopDetailsPath(stopId, routeType),
+      buildStopDetailsParams(opts),
+      StopDetailsResponseValidator,
     );
   }
 }
