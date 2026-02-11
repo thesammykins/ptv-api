@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { StatusResponseSchema } from "../schemas/common.js";
 import { RunSchema } from "../schemas/run.js";
-import type { RunOptions } from "../types.js";
+import type { RunExpand } from "../types.js";
 
 export interface ExtendedRunOptions {
-  expand?: string[];
+  expand?: RunExpand[];
   date_utc?: string;
   include_geopath?: boolean;
 }

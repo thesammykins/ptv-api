@@ -94,10 +94,15 @@ export interface SearchOptions {
   include_outlets?: boolean;
 }
 
+// Expand parameter literal union types per endpoint
+export type DepartureExpand = "all" | "stop" | "route" | "run" | "direction" | "disruption" | "VehicleDescriptor" | "VehiclePosition" | "none";
+export type RunExpand = "all" | "VehicleDescriptor" | "VehiclePosition" | "none";
+export type PatternExpand = "all" | "stop" | "route" | "run" | "direction" | "disruption" | "VehicleDescriptor" | "VehiclePosition" | "none";
+
 export interface DepartureOptions {
   direction_id?: number;
   max_results?: number;
-  expand?: string[];
+  expand?: DepartureExpand[];
   date_utc?: string;
 }
 
@@ -117,5 +122,5 @@ export interface DisruptionOptions {
 }
 
 export interface RunOptions {
-  expand?: string[];
+  expand?: RunExpand[];
 }

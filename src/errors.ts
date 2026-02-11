@@ -1,4 +1,10 @@
-const REDACT_PATTERNS = [/devid=[^&]*/gi, /signature=[^&]*/gi];
+const REDACT_PATTERNS = [
+  /devid=[^&]*/gi,
+  /signature=[^&]*/gi,
+  /apikey=[^&]*/gi,
+  /key=[^&]*/gi,
+  /api_key=[^&]*/gi,
+];
 
 function redactCredentials(input: string): string {
   let result = input;
@@ -32,6 +38,9 @@ export class PTVError extends Error {
     this.name = "PTVError";
     this.endpoint = endpoint.split("?")[0];
     this.responseBody = redactBody(responseBody);
+    if (this.stack) {
+      this.stack = redactCredentials(this.stack);
+    }
   }
 }
 
@@ -39,6 +48,13 @@ export class PTVAuthError extends PTVError {
   constructor(endpoint: string, responseBody?: unknown) {
     super("Authentication failed", 403, endpoint, responseBody);
     this.name = "PTVAuthError";
+  }
+}
+
+export class PTVBadRequestError extends PTVError {
+  constructor(endpoint: string, responseBody?: unknown) {
+    super("Bad request", 400, endpoint, responseBody);
+    this.name = "PTVBadRequestError";
   }
 }
 
@@ -102,6 +118,9 @@ export function errorFromStatus(
   endpoint: string,
   responseBody?: unknown,
 ): PTVError {
+  if (statusCode === 400) {
+    return new PTVBadRequestError(endpoint, responseBody);
+  }
   if (statusCode === 401 || statusCode === 403) {
     return new PTVAuthError(endpoint, responseBody);
   }

@@ -6,13 +6,14 @@ import { RouteSchema } from "../schemas/route.js";
 import { RunSchema } from "../schemas/run.js";
 import { DirectionSchema } from "../schemas/direction.js";
 import { DisruptionSchema } from "../schemas/disruption.js";
+import type { PatternExpand } from "../types.js";
 
 export function stoppingPatternPath(runRef: string, routeType: number): string {
   return `/v3/pattern/run/${runRef}/route_type/${routeType}`;
 }
 
 export interface StoppingPatternOptions {
-  expand?: string[];
+  expand?: PatternExpand[];
   stop_id?: number;
   date_utc?: string;
   include_skipped_stops?: boolean;

@@ -766,13 +766,17 @@ describe("PTVClient", () => {
     });
 
     it("handles unreadable body on error response", async () => {
-      const response = new Response(null, { status: 400 });
-      // Sabotage .text() to simulate body read failure
-      Object.defineProperty(response, "text", {
-        value: () => Promise.reject(new Error("body locked")),
-      });
-      Object.defineProperty(response, "ok", { value: false });
-      fetchFn.mockResolvedValue(response);
+      // Create a response whose .text() always rejects, even after cloning
+      function brokenTextResponse(): Response {
+        const r = new Response(null, { status: 400 });
+        Object.defineProperty(r, "text", {
+          value: () => Promise.reject(new Error("body locked")),
+        });
+        Object.defineProperty(r, "ok", { value: false });
+        Object.defineProperty(r, "clone", { value: () => brokenTextResponse() });
+        return r;
+      }
+      fetchFn.mockResolvedValue(brokenTextResponse());
 
       try {
         await client.routeTypes();
